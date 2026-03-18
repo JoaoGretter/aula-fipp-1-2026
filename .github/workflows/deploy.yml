@@ -24,33 +24,35 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/aula-fipp-1-2026
-            
-            echo "Backup..."
-            cp -r . ../backup-$(date +%F-%H-%M)
+            set -e
 
-            echo "Atualizando..."
+            echo "📁 Entrando no diretório..."
+            cd /home/ubuntu/aula-fipp-1-2026
+
+            echo "📦 Criando backup..."
+            mkdir -p /home/ubuntu/backups
+            cp -r /home/ubuntu/aula-fipp-1-2026 /home/ubuntu/backups/backup-$(date +%F-%H-%M)
+
+            echo "⬇️ Atualizando código..."
             git pull origin main
 
-            echo "Reiniciando..."
+            echo "🔄 Reiniciando serviço..."
             sudo systemctl restart flaskapp
 
+            echo "✅ Deploy finalizado com sucesso"
+
       # ✅ SUCESSO
-      - name: Notificar sucesso no Discord
+      - name: Discord Sucesso
         if: success()
         run: |
           curl -H "Content-Type: application/json" \
-          -d '{
-                "content": "✅ Deploy realizado com sucesso!"
-              }' \
+          -d "{\"content\": \"✅ Deploy realizado com sucesso na VM 🚀\"}" \
           ${{ secrets.DISCORD_WEBHOOK }}
 
       # ❌ ERRO
-      - name: Notificar erro no Discord
+      - name: Discord Erro
         if: failure()
         run: |
           curl -H "Content-Type: application/json" \
-          -d '{
-                "content": "❌ Erro no deploy! Verifique o GitHub Actions."
-              }' \
+          -d "{\"content\": \"❌ Erro no deploy! Verifique o GitHub Actions.\"}" \
           ${{ secrets.DISCORD_WEBHOOK }}
