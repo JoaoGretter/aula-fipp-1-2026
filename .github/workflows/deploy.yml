@@ -24,22 +24,19 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e
-
-            echo "📁 Entrando no diretório..."
             cd /home/ubuntu/aula-fipp-1-2026
-
-            echo "📦 Criando backup..."
+          
+            echo "Criando pasta de backup..."
             mkdir -p /home/ubuntu/backups
-            cp -r /home/ubuntu/aula-fipp-1-2026 /home/ubuntu/backups/backup-$(date +%F-%H-%M)
-
-            echo "⬇️ Atualizando código..."
+          
+            echo "Backup..."
+            cp -r /home/ubuntu/aula-fipp-1-2026 /home/ubuntu/backups/app-$(date +%Y-%m-%d-%H-%M)
+          
+            echo "Atualizando..."
             git pull origin main
-
-            echo "🔄 Reiniciando serviço..."
+          
+            echo "Reiniciando..."
             sudo systemctl restart flaskapp
-
-            echo "✅ Deploy finalizado com sucesso"
 
       # ✅ SUCESSO
       - name: Discord Sucesso
