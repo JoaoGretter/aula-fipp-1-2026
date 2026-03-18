@@ -1,0 +1,59 @@
+name: Deploy Flask App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Deploy na VM via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            echo "🚀 Iniciando deploy..."
+
+            cd /home/ubuntu
+
+            echo "📦 Criando backup..."
+            cp -r aula-fipp-1-2026 aula-fipp-1-2026-backup-$(date +%Y%m%d%H%M%S)
+
+            echo "📥 Atualizando código..."
+            cd aula-fipp-1-2026
+            git pull origin main
+
+            echo "🐍 Recriando ambiente virtual..."
+            rm -rf venv
+            python3 -m venv venv
+            source venv/bin/activate
+
+            echo "📚 Instalando dependências..."
+            pip install -r requirements.txt
+
+            echo "🔄 Reiniciando serviço..."
+            sudo systemctl restart flaskapp
+
+            echo "✅ Deploy finalizado com sucesso"
+
+      - name: Notificar sucesso no Discord
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d '{"content":"✅ Deploy realizado com sucesso na VM!"}' \
+          ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Notificar erro no Discord
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d '{"content":"❌ Erro no deploy na VM!"}' \
+          ${{ secrets.DISCORD_WEBHOOK }}
