@@ -22,7 +22,7 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ubuntu
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.VM_SSH_KEY }}
           script: |
             cd /home/ubuntu/aula-fipp-1-2026
           
